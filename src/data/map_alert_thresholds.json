@@ -1,0 +1,74 @@
+[
+  {
+    "threshold_id": 1,
+    "vital_sign": "Heart Rate",
+    "unit": "bpm",
+    "normal_min": 60,
+    "normal_max": 100,
+    "warning_min": 50,
+    "warning_max": 110,
+    "critical_min": 40,
+    "critical_max": 130,
+    "updated_at": "2025-01-01 00:00:00"
+  },
+  {
+    "threshold_id": 2,
+    "vital_sign": "Systolic BP",
+    "unit": "mmHg",
+    "normal_min": 90,
+    "normal_max": 140,
+    "warning_min": 80,
+    "warning_max": 160,
+    "critical_min": 70,
+    "critical_max": 180,
+    "updated_at": "2025-01-01 00:00:00"
+  },
+  {
+    "threshold_id": 3,
+    "vital_sign": "Diastolic BP",
+    "unit": "mmHg",
+    "normal_min": 60,
+    "normal_max": 90,
+    "warning_min": 50,
+    "warning_max": 100,
+    "critical_min": 40,
+    "critical_max": 120,
+    "updated_at": "2025-01-01 00:00:00"
+  },
+  {
+    "threshold_id": 4,
+    "vital_sign": "Temperature",
+    "unit": "\u00b0C",
+    "normal_min": 36.0,
+    "normal_max": 38.0,
+    "warning_min": 35.0,
+    "warning_max": 38.5,
+    "critical_min": 34.5,
+    "critical_max": 39.5,
+    "updated_at": "2025-01-01 00:00:00"
+  },
+  {
+    "threshold_id": 5,
+    "vital_sign": "SpO2",
+    "unit": "%",
+    "normal_min": 95,
+    "normal_max": 100,
+    "warning_min": 90,
+    "warning_max": 100,
+    "critical_min": 85,
+    "critical_max": 100,
+    "updated_at": "2025-01-01 00:00:00"
+  },
+  {
+    "threshold_id": 6,
+    "vital_sign": "Respiratory Rate",
+    "unit": "bpm",
+    "normal_min": 12,
+    "normal_max": 20,
+    "warning_min": 10,
+    "warning_max": 25,
+    "critical_min": 8,
+    "critical_max": 35,
+    "updated_at": "2025-01-01 00:00:00"
+  }
+]
