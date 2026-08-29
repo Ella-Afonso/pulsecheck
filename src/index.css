@@ -20,13 +20,12 @@ body {
   min-height: 100svh;
 }
 
-.debug-feed {
+.wardround-app {
+  box-sizing: border-box;
   min-height: 100svh;
   padding: var(--sp-8);
-  background: var(--bg-base);
-  color: var(--text-body);
-}
-
-.debug-feed h1 {
-  color: var(--display);
+  background:
+    radial-gradient(circle at top, var(--glow-rose), transparent),
+    radial-gradient(circle at right top, var(--glow-plum), transparent),
+    linear-gradient(var(--bg-base), var(--bg-deep));
 }
