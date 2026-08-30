@@ -58,13 +58,12 @@ function ProposalDetails({ proposal }) {
 }
 
 export function ProposalCard({ proposal, approvalError, patient, onApprove, onReject }) {
-  const proposalLabel = proposal.origin === "demo" ? "Demo proposal" : "Agent proposal";
   const patientLabel = targetLabel(proposal, patient);
 
   return (
     <article className="proposal-card">
       <header className="proposal-card__header">
-        <p className="proposal-card__eyebrow">{proposalLabel}</p>
+        <p className="proposal-card__eyebrow">Agent proposal</p>
         {proposal.priority ? (
           <p className="proposal-card__priority">{formatPriority(proposal.priority)}</p>
         ) : null}

@@ -461,7 +461,6 @@
   white-space: nowrap;
 }
 
-.approvals-rail__demo,
 .proposal-card__approve,
 .proposal-card__reject {
   font: inherit;
@@ -471,32 +470,10 @@
   cursor: pointer;
 }
 
-.approvals-rail__demo:focus-visible,
 .proposal-card__approve:focus-visible,
 .proposal-card__reject:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
-}
-
-.approvals-rail__demo {
-  width: 100%;
-  margin-top: var(--sp-4);
-  padding: var(--sp-2) var(--sp-3);
-  border: 1px solid var(--border-hair);
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--text-muted);
-  text-align: left;
-}
-
-.approvals-rail__demo:hover:not(:disabled) {
-  border-color: var(--agent-line);
-  color: var(--agent);
-}
-
-.approvals-rail__demo:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
 }
 
 .approvals-rail__list {

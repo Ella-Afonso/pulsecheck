@@ -21,13 +21,11 @@ function concernText(topConcern) {
 
 function flagLabel(flag) {
   const priority = flag.priority.charAt(0).toUpperCase() + flag.priority.slice(1);
-  return `${flag.origin === "demo" ? "Demo flag" : "Flagged"} · ${priority}`;
+  return `Flagged · ${priority}`;
 }
 
 function flagAriaLabel(flag) {
-  return flag.origin === "demo"
-    ? `${flagLabel(flag)} from the demo workflow`
-    : `${flagLabel(flag)} from an approved agent proposal`;
+  return `${flagLabel(flag)} from an approved agent proposal`;
 }
 
 export function PatientCard({ patient }) {

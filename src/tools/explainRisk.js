@@ -18,6 +18,14 @@ function serializeTopConcern(topConcern) {
   };
 }
 
+function hasValidPatientId(value) {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.length <= 64
+  );
+}
+
 export const explainRisk = {
   name: "explain_risk",
   description:
@@ -36,8 +44,13 @@ export const explainRisk = {
   },
   annotations: {
     readOnlyHint: true,
+    untrustedContentHint: true,
   },
-  async execute({ patient_id: patientId }) {
+  async execute({ patient_id: patientId } = {}) {
+    if (!hasValidPatientId(patientId)) {
+      return toolResult({ error: "unknown_patient", patient_id: null });
+    }
+
     const { patients } = useWardStore.getState();
     const patient = patients.find((candidate) => candidate.patient_id === patientId);
 

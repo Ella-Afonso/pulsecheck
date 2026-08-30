@@ -5,7 +5,6 @@ export function ApprovalsRail() {
   const pendingProposals = useWardStore((state) => state.pendingProposals);
   const proposalErrors = useWardStore((state) => state.proposalErrors);
   const patients = useWardStore((state) => state.patients);
-  const queueDemoProposal = useWardStore((state) => state.queueDemoProposal);
   const approveProposal = useWardStore((state) => state.approveProposal);
   const rejectProposal = useWardStore((state) => state.rejectProposal);
 
@@ -25,19 +24,10 @@ export function ApprovalsRail() {
         </p>
       </header>
 
-      <button
-        className="approvals-rail__demo"
-        type="button"
-        onClick={queueDemoProposal}
-        disabled={patients.length === 0}
-      >
-        Add Demo proposal
-      </button>
-
       <div className="approvals-rail__list">
         {pendingProposals.length === 0 ? (
           <p className="approvals-rail__empty">
-            No pending proposals. Add a Demo proposal to preview the approval loop.
+            No pending proposals. Agent proposals appear here for nurse review.
           </p>
         ) : (
           pendingProposals.map((proposal) => (

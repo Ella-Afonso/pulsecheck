@@ -78,7 +78,6 @@ function createBaseProposal({
   summary,
   priority,
   provenance,
-  origin,
   createdAt,
 }) {
   const provenanceReason = normalizeText(
@@ -99,7 +98,6 @@ function createBaseProposal({
     provenanceReason,
     status: "pending",
     createdAt,
-    origin,
   };
 }
 
@@ -113,7 +111,6 @@ function createPatientProposal(input, patients, createdAt, type) {
   if (!patient) return { ok: false, code: "unknown_patient" };
 
   const provenance = createPatientProvenance(patient, createdAt);
-  const origin = input?.origin === "demo" ? "demo" : "agent";
 
   if (type === "flag") {
     const reason = normalizeText(input?.reason, MAX_REASON_LENGTH);
@@ -130,7 +127,6 @@ function createPatientProposal(input, patients, createdAt, type) {
       summary: `Flag for ${priority} nurse review`,
       priority,
       provenance,
-      origin,
       createdAt,
     });
 
@@ -138,8 +134,6 @@ function createPatientProposal(input, patients, createdAt, type) {
       ? { ok: true, proposal }
       : { ok: false, code: "invalid_proposal" };
   }
-
-  if (origin !== "agent") return { ok: false, code: "invalid_proposal" };
 
   if (type === "annotation") {
     const note = normalizeText(input?.note, MAX_NOTE_LENGTH);
@@ -158,7 +152,6 @@ function createPatientProposal(input, patients, createdAt, type) {
       payload: { note, reason },
       summary: "Add an agent note",
       provenance,
-      origin,
       createdAt,
     });
 
@@ -188,7 +181,6 @@ function createPatientProposal(input, patients, createdAt, type) {
     payload: { alertId, note },
     summary: "Acknowledge active alert",
     provenance,
-    origin,
     createdAt,
   });
 
@@ -198,8 +190,6 @@ function createPatientProposal(input, patients, createdAt, type) {
 }
 
 function createTriageProposal(input, patients, createdAt) {
-  if (input?.origin === "demo") return { ok: false, code: "invalid_proposal" };
-
   const patientIds = input?.ordered_patient_ids;
   const reason = normalizeText(input?.rationale, MAX_REASON_LENGTH);
 
@@ -212,7 +202,6 @@ function createTriageProposal(input, patients, createdAt) {
     payload: { patientIds: [...patientIds], reason },
     summary: "Apply a manual ward triage order",
     provenance: createTriageProvenance(patients, createdAt),
-    origin: "agent",
     createdAt,
   });
 
@@ -248,7 +237,6 @@ function createAuditEntry({ actor, action, proposal, detail }) {
     ...(proposal.patient_id ? { patient_id: proposal.patient_id } : {}),
     detail,
     at: new Date().toISOString(),
-    ...(actor === "agent" ? { origin: proposal.origin } : {}),
   };
 }
 
@@ -261,15 +249,12 @@ function createHandoffAuditEntry({ actor, action, detail }) {
     tool: "draft_handoff_summary",
     detail,
     at: new Date().toISOString(),
-    ...(actor === "agent" ? { origin: "agent" } : {}),
   };
 }
 
 function auditDetail(proposal, decision) {
-  const demoPrefix = proposal.origin === "demo" ? "Demo proposal — " : "";
-
   if (decision === "proposed") {
-    return `${demoPrefix}${proposal.provenanceReason}`;
+    return proposal.provenanceReason;
   }
 
   const subject = {
@@ -279,7 +264,7 @@ function auditDetail(proposal, decision) {
     propose_triage_order: "manual triage order",
   }[proposal.tool];
 
-  return `${demoPrefix}Nurse ${decision} the ${subject}.`;
+  return `Nurse ${decision} the ${subject}.`;
 }
 
 function approvalErrorMessage(code) {
@@ -370,21 +355,6 @@ export const useWardStore = create((set, get) => ({
     }));
 
     return { ok: true, proposalId: proposal.id };
-  },
-  queueDemoProposal: () => {
-    const patient = get().patients[0];
-
-    if (!patient) {
-      return { ok: false, code: "no_patients" };
-    }
-
-    return get().addProposal({
-      tool: "flag_patient",
-      patient_id: patient.patient_id,
-      priority: "urgent",
-      reason: "Review for deterioration.",
-      origin: "demo",
-    });
   },
   draftHandoffSummary: (content) => {
     const normalizedContent = normalizeHandoffContent(content);

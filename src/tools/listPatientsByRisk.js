@@ -27,6 +27,18 @@ function serializePatient(patient) {
   };
 }
 
+function hasValidWard(value) {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    value.length <= 32
+  );
+}
+
+function hasValidMinimumSeverity(value) {
+  return Number.isInteger(value) && value >= 1 && value <= 5;
+}
+
 export const listPatientsByRisk = {
   name: "list_patients_by_risk",
   description:
@@ -49,8 +61,16 @@ export const listPatientsByRisk = {
   },
   annotations: {
     readOnlyHint: true,
+    untrustedContentHint: true,
   },
   async execute({ ward, min_severity: minSeverity } = {}) {
+    if (
+      (ward !== undefined && !hasValidWard(ward)) ||
+      (minSeverity !== undefined && !hasValidMinimumSeverity(minSeverity))
+    ) {
+      return toolResult({ error: "invalid_filters" });
+    }
+
     const { patients } = useWardStore.getState();
     const normalizedWard = ward?.trim().toLowerCase();
     const scopedPatients = patients

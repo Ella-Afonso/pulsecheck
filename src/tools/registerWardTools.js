@@ -8,7 +8,6 @@ import { proposeTriageOrder } from "./proposeTriageOrder";
 
 export async function registerWardTools(signal) {
   if (typeof document.modelContext?.registerTool !== "function") {
-    console.warn("[webmcp] document.modelContext.registerTool is unavailable");
     return false;
   }
 
@@ -20,13 +19,8 @@ export async function registerWardTools(signal) {
     await document.modelContext.registerTool(acknowledgeAlert, { signal });
     await document.modelContext.registerTool(proposeTriageOrder, { signal });
     await document.modelContext.registerTool(draftHandoffSummary, { signal });
-    console.info("[webmcp] ward tools registered");
     return true;
-  } catch (error) {
-    if (!signal.aborted) {
-      console.error("[webmcp] ward tool registration failed", error);
-    }
-
+  } catch {
     return false;
   }
 }

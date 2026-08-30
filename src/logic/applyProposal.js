@@ -2,7 +2,6 @@ import { getActiveAlert } from "./activeAlert";
 import { applyManualTriageOrder } from "./riskScore";
 
 const FLAG_PRIORITIES = new Set(["watch", "urgent", "critical"]);
-const PROPOSAL_ORIGINS = new Set(["agent", "demo"]);
 
 function isNonEmptyString(value, maximumLength) {
   return (
@@ -18,8 +17,7 @@ function hasValidBaseProposal(proposal) {
     isNonEmptyString(proposal.id) &&
     isNonEmptyString(proposal.summary, 140) &&
     isNonEmptyString(proposal.provenanceReason, 280) &&
-    isNonEmptyString(proposal.createdAt) &&
-    PROPOSAL_ORIGINS.has(proposal.origin)
+    isNonEmptyString(proposal.createdAt)
   );
 }
 
@@ -36,7 +34,6 @@ function isFlagProposal(proposal) {
 function isAnnotationProposal(proposal) {
   return (
     hasValidBaseProposal(proposal) &&
-    proposal.origin === "agent" &&
     isNonEmptyString(proposal.patient_id, 64) &&
     proposal.tool === "annotate_patient" &&
     isNonEmptyString(proposal.payload?.note, 280) &&
@@ -51,7 +48,6 @@ function isAcknowledgementProposal(proposal) {
 
   return (
     hasValidBaseProposal(proposal) &&
-    proposal.origin === "agent" &&
     isNonEmptyString(proposal.patient_id, 64) &&
     proposal.tool === "acknowledge_alert" &&
     isNonEmptyString(proposal.payload?.alertId, 96) &&
@@ -77,7 +73,6 @@ function hasCompleteLiveWardOrder(patients, patientIds) {
 function isTriageProposal(proposal, patients) {
   return (
     hasValidBaseProposal(proposal) &&
-    proposal.origin === "agent" &&
     proposal.patient_id === null &&
     proposal.tool === "propose_triage_order" &&
     isNonEmptyString(proposal.payload?.reason, 280) &&
@@ -147,7 +142,6 @@ function applyFlagProposal(patients, proposal, approvedAt) {
           provenanceReason: proposal.provenanceReason,
           createdAt: proposal.createdAt,
           approvedAt,
-          origin: proposal.origin,
         },
       },
     })),
@@ -179,7 +173,6 @@ function applyAnnotationProposal(patients, proposal, approvedAt) {
             provenanceReason: proposal.provenanceReason,
             createdAt: proposal.createdAt,
             approvedAt,
-            origin: proposal.origin,
           },
         ],
       },
@@ -224,7 +217,6 @@ function applyAcknowledgementProposal(patients, proposal, approvedAt) {
             provenanceReason: proposal.provenanceReason,
             createdAt: proposal.createdAt,
             approvedAt,
-            origin: proposal.origin,
           },
         },
       },
@@ -245,7 +237,6 @@ function applyTriageProposal(patients, proposal, approvedAt) {
     provenanceReason: proposal.provenanceReason,
     createdAt: proposal.createdAt,
     approvedAt,
-    origin: proposal.origin,
   };
 
   return {
