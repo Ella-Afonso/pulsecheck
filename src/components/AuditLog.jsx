@@ -7,9 +7,23 @@ function formatTime(value) {
   }).format(new Date(value));
 }
 
+const TOOL_LABELS = {
+  flag_patient: "patient flag",
+  annotate_patient: "patient note",
+  acknowledge_alert: "alert acknowledgement",
+  propose_triage_order: "manual triage order",
+};
+
 function actionLabel(entry) {
   const actor = entry.actor === "agent" ? "Agent" : "Nurse";
-  return `${actor} ${entry.action} a patient flag`;
+  const action = {
+    proposed: "proposed",
+    approved: "approved",
+    rejected: "rejected",
+  }[entry.action] ?? "recorded";
+  const subject = TOOL_LABELS[entry.tool] ?? "ward action";
+
+  return `${actor} ${action} ${entry.action === "proposed" ? "a" : "the"} ${subject}`;
 }
 
 export function AuditLog() {

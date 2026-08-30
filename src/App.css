@@ -74,6 +74,21 @@
   font-variant-numeric: tabular-nums;
 }
 
+.patient-board__signals {
+  display: grid;
+  justify-items: end;
+  gap: var(--sp-2);
+}
+
+.patient-board__override {
+  margin: 0;
+  color: var(--brand-rose);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
 .patient-board__live span,
 .severity-badge__dot {
   width: var(--sp-2);
@@ -174,7 +189,11 @@
 .patient-card__concern,
 .patient-card__score,
 .patient-card__flag span,
-.patient-card__flag strong {
+.patient-card__flag strong,
+.patient-card__note span,
+.patient-card__note p,
+.patient-card__acknowledgement span,
+.patient-card__acknowledgement strong {
   margin: 0;
   font-size: var(--fs-sm);
 }
@@ -213,6 +232,43 @@
   text-align: right;
 }
 
+.patient-card__note,
+.patient-card__acknowledgement {
+  display: grid;
+  gap: var(--sp-1);
+  padding-top: var(--sp-3);
+  border-top: 1px solid var(--agent-line);
+}
+
+.patient-card__note span,
+.patient-card__acknowledgement span {
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+.patient-card__note span {
+  color: var(--agent);
+}
+
+.patient-card__note p {
+  color: var(--text-body);
+}
+
+.patient-card__acknowledgement {
+  border-top-color: var(--status-positive);
+}
+
+.patient-card__acknowledgement span,
+.patient-card__acknowledgement strong {
+  color: var(--status-positive);
+}
+
+.patient-card__acknowledgement strong {
+  font-weight: var(--fw-semi);
+}
+
 .approvals-rail,
 .audit-log {
   min-width: 0;
@@ -245,6 +301,25 @@
 .proposal-card h3 {
   margin: 0;
   color: var(--text-hi);
+}
+
+.proposal-card__detail {
+  display: grid;
+  gap: var(--sp-1);
+}
+
+.proposal-card__detail span {
+  color: var(--agent);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+.proposal-card__detail p {
+  margin: 0;
+  color: var(--text-body);
+  font-size: var(--fs-sm);
 }
 
 .approvals-rail h2,

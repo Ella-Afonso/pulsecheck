@@ -3,8 +3,16 @@ import alertThresholds from "../data/map_alert_thresholds.json";
 import vitalsRecords from "../data/bulk_vitals.json";
 import { driftPatient } from "../data/drift";
 import { normalizeWardPatients } from "../data/normalize";
+import { getActiveAlert } from "../logic/activeAlert";
 import { applyProposal } from "../logic/applyProposal";
-import { scoreAndRankPatients } from "../logic/riskScore";
+import {
+  applyManualTriageOrder,
+  scoreAndRankPatients,
+} from "../logic/riskScore";
+import {
+  createPatientProvenance,
+  createTriageProvenance,
+} from "../logic/provenance";
 
 const initialPatients = scoreAndRankPatients(
   normalizeWardPatients(vitalsRecords, {
@@ -15,8 +23,9 @@ const initialPatients = scoreAndRankPatients(
 );
 
 const FLAG_PRIORITIES = new Set(["watch", "urgent", "critical"]);
-const MAX_SUMMARY_LENGTH = 140;
 const MAX_REASON_LENGTH = 280;
+const MAX_NOTE_LENGTH = 280;
+const ALERT_ID_PATTERN = /^alert:[A-Za-z0-9-]{1,64}:(hr|spo2|resp|temp|systolicBp|diastolicBp):(warning|high|critical)$/;
 
 function createId(prefix) {
   if (typeof globalThis.crypto?.randomUUID === "function") {
@@ -35,36 +44,190 @@ function normalizeText(value, maximumLength) {
     : null;
 }
 
-function createPendingProposal(input) {
-  const patientId = normalizeText(input?.patient_id, 64);
-  const summary = normalizeText(input?.summary, MAX_SUMMARY_LENGTH);
-  const provenanceReason = normalizeText(input?.provenanceReason, MAX_REASON_LENGTH);
-  const reason = normalizeText(input?.reason, MAX_REASON_LENGTH);
+function findPatient(patients, patientId) {
+  return patients.find((patient) => patient.patient_id === patientId);
+}
 
+function hasCompleteLiveWardOrder(patients, patientIds) {
   if (
-    input?.tool !== "flag_patient" ||
-    !patientId ||
-    !summary ||
-    !provenanceReason ||
-    !reason ||
-    !FLAG_PRIORITIES.has(input?.priority) ||
-    !["agent", "demo"].includes(input?.origin)
+    !Array.isArray(patientIds) ||
+    patients.length !== 6 ||
+    patientIds.length !== 6 ||
+    new Set(patientIds).size !== 6 ||
+    patientIds.some((patientId) => !normalizeText(patientId, 64))
   ) {
-    return null;
+    return false;
   }
+
+  const livePatientIds = new Set(patients.map((patient) => patient.patient_id));
+  return livePatientIds.size === 6 && patientIds.every((id) => livePatientIds.has(id));
+}
+
+function createBaseProposal({
+  tool,
+  patientId = null,
+  payload,
+  summary,
+  priority,
+  provenance,
+  origin,
+  createdAt,
+}) {
+  const provenanceReason = normalizeText(
+    provenance?.evidence,
+    MAX_REASON_LENGTH,
+  );
+
+  if (!provenanceReason) return null;
 
   return {
     id: createId("proposal"),
-    tool: input.tool,
+    tool,
     patient_id: patientId,
+    payload,
     summary,
+    ...(priority ? { priority } : {}),
+    provenance,
     provenanceReason,
-    priority: input.priority,
-    reason,
     status: "pending",
-    createdAt: new Date().toISOString(),
-    origin: input.origin,
+    createdAt,
+    origin,
   };
+}
+
+function createPatientProposal(input, patients, createdAt, type) {
+  const patientId = normalizeText(input?.patient_id, 64);
+
+  if (!patientId) return { ok: false, code: "invalid_proposal" };
+
+  const patient = findPatient(patients, patientId);
+
+  if (!patient) return { ok: false, code: "unknown_patient" };
+
+  const provenance = createPatientProvenance(patient, createdAt);
+  const origin = input?.origin === "demo" ? "demo" : "agent";
+
+  if (type === "flag") {
+    const reason = normalizeText(input?.reason, MAX_REASON_LENGTH);
+    const priority = input?.priority;
+
+    if (!reason || !FLAG_PRIORITIES.has(priority)) {
+      return { ok: false, code: "invalid_proposal" };
+    }
+
+    const proposal = createBaseProposal({
+      tool: "flag_patient",
+      patientId,
+      payload: { reason, priority },
+      summary: `Flag for ${priority} nurse review`,
+      priority,
+      provenance,
+      origin,
+      createdAt,
+    });
+
+    return proposal
+      ? { ok: true, proposal }
+      : { ok: false, code: "invalid_proposal" };
+  }
+
+  if (origin !== "agent") return { ok: false, code: "invalid_proposal" };
+
+  if (type === "annotation") {
+    const note = normalizeText(input?.note, MAX_NOTE_LENGTH);
+    const reason =
+      input?.reason === undefined
+        ? null
+        : normalizeText(input.reason, MAX_REASON_LENGTH);
+
+    if (!note || (input?.reason !== undefined && !reason)) {
+      return { ok: false, code: "invalid_proposal" };
+    }
+
+    const proposal = createBaseProposal({
+      tool: "annotate_patient",
+      patientId,
+      payload: { note, reason },
+      summary: "Add an agent note",
+      provenance,
+      origin,
+      createdAt,
+    });
+
+    return proposal
+      ? { ok: true, proposal }
+      : { ok: false, code: "invalid_proposal" };
+  }
+
+  const alertId = normalizeText(input?.alert_id, 96);
+  const note = input?.note === undefined ? null : normalizeText(input.note, MAX_REASON_LENGTH);
+
+  if (!alertId || !ALERT_ID_PATTERN.test(alertId) || input?.note !== undefined && !note) {
+    return { ok: false, code: "invalid_proposal" };
+  }
+
+  if (getActiveAlert(patient)?.alertId !== alertId) {
+    return { ok: false, code: "unknown_alert" };
+  }
+
+  if (patient.workflow?.acknowledgements?.[alertId]) {
+    return { ok: false, code: "already_acknowledged" };
+  }
+
+  const proposal = createBaseProposal({
+    tool: "acknowledge_alert",
+    patientId,
+    payload: { alertId, note },
+    summary: "Acknowledge active alert",
+    provenance,
+    origin,
+    createdAt,
+  });
+
+  return proposal
+    ? { ok: true, proposal }
+    : { ok: false, code: "invalid_proposal" };
+}
+
+function createTriageProposal(input, patients, createdAt) {
+  if (input?.origin === "demo") return { ok: false, code: "invalid_proposal" };
+
+  const patientIds = input?.ordered_patient_ids;
+  const reason = normalizeText(input?.rationale, MAX_REASON_LENGTH);
+
+  if (!reason || !hasCompleteLiveWardOrder(patients, patientIds)) {
+    return { ok: false, code: "invalid_triage_order" };
+  }
+
+  const proposal = createBaseProposal({
+    tool: "propose_triage_order",
+    payload: { patientIds: [...patientIds], reason },
+    summary: "Apply a manual ward triage order",
+    provenance: createTriageProvenance(patients, createdAt),
+    origin: "agent",
+    createdAt,
+  });
+
+  return proposal
+    ? { ok: true, proposal }
+    : { ok: false, code: "invalid_proposal" };
+}
+
+function createPendingProposal(input, patients) {
+  const createdAt = new Date().toISOString();
+
+  switch (input?.tool) {
+    case "flag_patient":
+      return createPatientProposal(input, patients, createdAt, "flag");
+    case "annotate_patient":
+      return createPatientProposal(input, patients, createdAt, "annotation");
+    case "acknowledge_alert":
+      return createPatientProposal(input, patients, createdAt, "acknowledgement");
+    case "propose_triage_order":
+      return createTriageProposal(input, patients, createdAt);
+    default:
+      return { ok: false, code: "invalid_proposal" };
+  }
 }
 
 function createAuditEntry({ actor, action, proposal, detail }) {
@@ -74,7 +237,7 @@ function createAuditEntry({ actor, action, proposal, detail }) {
     action,
     proposal_id: proposal.id,
     tool: proposal.tool,
-    patient_id: proposal.patient_id,
+    ...(proposal.patient_id ? { patient_id: proposal.patient_id } : {}),
     detail,
     at: new Date().toISOString(),
     ...(actor === "agent" ? { origin: proposal.origin } : {}),
@@ -88,19 +251,28 @@ function auditDetail(proposal, decision) {
     return `${demoPrefix}${proposal.provenanceReason}`;
   }
 
-  return `${demoPrefix}Nurse ${decision} ${proposal.summary.toLowerCase()}.`;
+  const subject = {
+    flag_patient: "patient flag",
+    annotate_patient: "patient note",
+    acknowledge_alert: "alert acknowledgement",
+    propose_triage_order: "manual triage order",
+  }[proposal.tool];
+
+  return `${demoPrefix}Nurse ${decision} the ${subject}.`;
 }
 
 function approvalErrorMessage(code) {
-  if (code === "unknown_patient") {
-    return "This patient is no longer available. The proposal remains pending.";
-  }
+  const messages = {
+    unknown_patient: "This patient is no longer available. The proposal remains pending.",
+    stale_alert: "This alert is no longer active. The proposal remains pending.",
+    already_acknowledged:
+      "This alert has already been acknowledged. The proposal remains pending.",
+    invalid_triage_order:
+      "The live ward order changed. The proposal remains pending.",
+    invalid_proposal: "This proposal is no longer valid. The proposal remains pending.",
+  };
 
-  if (code === "unsupported_proposal") {
-    return "This proposal is not supported yet. The proposal remains pending.";
-  }
-
-  return "This proposal is no longer valid. The proposal remains pending.";
+  return messages[code] ?? "This proposal is no longer valid. The proposal remains pending.";
 }
 
 function withoutProposalError(proposalErrors, proposalId) {
@@ -109,26 +281,53 @@ function withoutProposalError(proposalErrors, proposalId) {
   );
 }
 
+function clearInactiveAcknowledgements(patient) {
+  const acknowledgements = patient.workflow?.acknowledgements;
+
+  if (!acknowledgements || Object.keys(acknowledgements).length === 0) {
+    return patient;
+  }
+
+  const activeAlert = getActiveAlert(patient);
+  const activeAcknowledgement = activeAlert
+    ? acknowledgements[activeAlert.alertId]
+    : null;
+
+  const nextAcknowledgements = activeAcknowledgement
+    ? { [activeAlert.alertId]: activeAcknowledgement }
+    : {};
+
+  if (
+    Object.keys(acknowledgements).length === Object.keys(nextAcknowledgements).length &&
+    (!activeAlert || acknowledgements[activeAlert.alertId] === activeAcknowledgement)
+  ) {
+    return patient;
+  }
+
+  return {
+    ...patient,
+    workflow: {
+      ...patient.workflow,
+      acknowledgements: nextAcknowledgements,
+    },
+  };
+}
+
 export const useWardStore = create((set, get) => ({
   patients: initialPatients,
   thresholds: alertThresholds,
+  triageOrderOverride: null,
   pendingProposals: [],
   proposalErrors: {},
   auditLog: [],
   addProposal: (input) => {
-    const proposal = createPendingProposal(input);
+    const result = createPendingProposal(input, get().patients);
 
-    if (!proposal) {
-      return { ok: false, code: "invalid_proposal" };
+    if (!result.ok) {
+      return { ok: false, code: result.code };
     }
 
-    const patientExists = get().patients.some(
-      (patient) => patient.patient_id === proposal.patient_id,
-    );
-
-    if (!patientExists) {
-      return { ok: false, code: "unknown_patient" };
-    }
+    const { proposal } = result;
 
     set((state) => ({
       pendingProposals: [...state.pendingProposals, proposal],
@@ -155,9 +354,6 @@ export const useWardStore = create((set, get) => ({
     return get().addProposal({
       tool: "flag_patient",
       patient_id: patient.patient_id,
-      summary: "Flag for urgent nurse review",
-      provenanceReason:
-        "Selected from the current highest-risk patient on the live ward queue.",
       priority: "urgent",
       reason: "Review for deterioration.",
       origin: "demo",
@@ -191,6 +387,9 @@ export const useWardStore = create((set, get) => ({
 
     set((state) => ({
       patients: result.patients,
+      ...(Object.hasOwn(result, "triageOrderOverride")
+        ? { triageOrderOverride: result.triageOrderOverride }
+        : {}),
       pendingProposals: state.pendingProposals.filter(
         (candidate) => candidate.id !== proposal.id,
       ),
@@ -238,11 +437,18 @@ export const useWardStore = create((set, get) => ({
   tick: () => {
     const timestamp = new Date().toISOString();
 
-    set((state) => ({
-      patients: scoreAndRankPatients(
+    set((state) => {
+      const riskRankedPatients = scoreAndRankPatients(
         state.patients.map((patient) => driftPatient(patient, timestamp)),
         state.thresholds,
-      ),
-    }));
+      ).map(clearInactiveAcknowledgements);
+
+      return {
+        patients: applyManualTriageOrder(
+          riskRankedPatients,
+          state.triageOrderOverride,
+        ),
+      };
+    });
   },
 }));

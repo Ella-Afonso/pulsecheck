@@ -1,3 +1,4 @@
+import { getActiveAlert } from "../logic/activeAlert";
 import { SeverityBadge } from "./SeverityBadge";
 
 function isConcernFor(topConcern, vitalKeys) {
@@ -33,6 +34,12 @@ export function PatientCard({ patient }) {
   const { vitals, topConcern } = patient;
   const severity = patient.severity ?? 1;
   const flag = patient.workflow?.flag;
+  const notes = patient.workflow?.notes ?? [];
+  const latestNote = notes[notes.length - 1];
+  const activeAlert = getActiveAlert(patient);
+  const acknowledgement = activeAlert
+    ? patient.workflow?.acknowledgements?.[activeAlert.alertId]
+    : null;
 
   return (
     <article className={`patient-card patient-card--severity-${severity}`}>
@@ -114,6 +121,24 @@ export function PatientCard({ patient }) {
         >
           <span>Agent workflow</span>
           <strong>{flagLabel(flag)}</strong>
+        </div>
+      ) : null}
+
+      {latestNote ? (
+        <div className="patient-card__note">
+          <span>Agent note</span>
+          <p>{latestNote.note}</p>
+        </div>
+      ) : null}
+
+      {acknowledgement ? (
+        <div
+          className="patient-card__acknowledgement"
+          role="status"
+          aria-label={`Nurse-approved acknowledgement for the current ${topConcern.label} alert`}
+        >
+          <span>Alert acknowledged</span>
+          <strong>{topConcern.label} · {topConcern.band}</strong>
         </div>
       ) : null}
     </article>

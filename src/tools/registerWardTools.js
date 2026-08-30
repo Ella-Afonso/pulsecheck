@@ -1,5 +1,9 @@
+import { acknowledgeAlert } from "./acknowledgeAlert";
+import { annotatePatient } from "./annotatePatient";
 import { explainRisk } from "./explainRisk";
+import { flagPatient } from "./flagPatient";
 import { listPatientsByRisk } from "./listPatientsByRisk";
+import { proposeTriageOrder } from "./proposeTriageOrder";
 
 export async function registerWardTools(signal) {
   if (typeof document.modelContext?.registerTool !== "function") {
@@ -10,7 +14,11 @@ export async function registerWardTools(signal) {
   try {
     await document.modelContext.registerTool(listPatientsByRisk, { signal });
     await document.modelContext.registerTool(explainRisk, { signal });
-    console.info("[webmcp] ward read tools registered");
+    await document.modelContext.registerTool(flagPatient, { signal });
+    await document.modelContext.registerTool(annotatePatient, { signal });
+    await document.modelContext.registerTool(acknowledgeAlert, { signal });
+    await document.modelContext.registerTool(proposeTriageOrder, { signal });
+    console.info("[webmcp] ward tools registered");
     return true;
   } catch (error) {
     if (!signal.aborted) {

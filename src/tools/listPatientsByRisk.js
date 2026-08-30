@@ -1,3 +1,4 @@
+import { comparePatientsByRisk } from "../logic/riskScore";
 import { useWardStore } from "../state/useWardStore";
 import { toolResult } from "./toolResult";
 
@@ -29,7 +30,7 @@ function serializePatient(patient) {
 export const listPatientsByRisk = {
   name: "list_patients_by_risk",
   description:
-    "List the current board patients in descending clinical risk, with optional ward and minimum-severity filters.",
+    "List patients in descending clinical risk, independent of any nurse-approved manual board order, with optional ward and minimum-severity filters.",
   inputSchema: {
     type: "object",
     properties: {
@@ -62,6 +63,7 @@ export const listPatientsByRisk = {
         (patient) =>
           minSeverity === undefined || patient.severity >= minSeverity,
       )
+      .sort(comparePatientsByRisk)
       .map(serializePatient);
 
     return toolResult({ patients: scopedPatients });

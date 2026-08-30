@@ -137,6 +137,47 @@ function compareConcerns(left, right) {
   return left.priority - right.priority;
 }
 
+export function comparePatientsByRisk(left, right) {
+  if (right.riskScore !== left.riskScore) {
+    return right.riskScore - left.riskScore;
+  }
+
+  if (right.severity !== left.severity) {
+    return right.severity - left.severity;
+  }
+
+  if (left.bed !== right.bed) {
+    return left.bed < right.bed ? -1 : 1;
+  }
+
+  if (left.patient_id === right.patient_id) return 0;
+  return left.patient_id < right.patient_id ? -1 : 1;
+}
+
+export function applyManualTriageOrder(patients, triageOrderOverride) {
+  const patientIds = triageOrderOverride?.patientIds;
+
+  if (
+    !Array.isArray(patients) ||
+    !Array.isArray(patientIds) ||
+    patientIds.length !== 6 ||
+    patients.length !== 6 ||
+    new Set(patientIds).size !== 6
+  ) {
+    return patients;
+  }
+
+  const patientsById = new Map(
+    patients.map((patient) => [patient.patient_id, patient]),
+  );
+
+  if (patientsById.size !== 6 || patientIds.some((id) => !patientsById.has(id))) {
+    return patients;
+  }
+
+  return patientIds.map((id) => patientsById.get(id));
+}
+
 function dataQualityConcern(definition, threshold) {
   return {
     kind: "data_quality",
@@ -235,20 +276,5 @@ export function scoreAndRankPatients(patients, thresholds) {
         topConcern,
       };
     })
-    .sort((left, right) => {
-      if (right.riskScore !== left.riskScore) {
-        return right.riskScore - left.riskScore;
-      }
-
-      if (right.severity !== left.severity) {
-        return right.severity - left.severity;
-      }
-
-      if (left.bed !== right.bed) {
-        return left.bed < right.bed ? -1 : 1;
-      }
-
-      if (left.patient_id === right.patient_id) return 0;
-      return left.patient_id < right.patient_id ? -1 : 1;
-    });
+    .sort(comparePatientsByRisk);
 }

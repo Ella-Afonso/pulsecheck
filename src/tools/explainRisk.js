@@ -1,3 +1,5 @@
+import { getActiveAlert } from "../logic/activeAlert";
+import { describePatientRisk } from "../logic/provenance";
 import { deriveTopConcernTrend } from "../logic/trend";
 import { useWardStore } from "../state/useWardStore";
 import { toolResult } from "./toolResult";
@@ -14,35 +16,6 @@ function serializeTopConcern(topConcern) {
     direction: topConcern.direction,
     band: topConcern.band,
   };
-}
-
-function formatValue(value, unit) {
-  return `${value}${unit ? ` ${unit}` : ""}`;
-}
-
-function riskRationale(patient, trend) {
-  const { topConcern } = patient;
-
-  if (!topConcern) {
-    return `Current risk score is ${patient.riskScore} with no abnormal top concern.`;
-  }
-
-  if (topConcern.kind === "data_quality") {
-    return `Top concern: ${topConcern.label} data is unavailable.`;
-  }
-
-  const currentValue = formatValue(topConcern.value, topConcern.unit);
-
-  if (trend.state === "unavailable") {
-    return `Top concern: ${topConcern.label} is ${topConcern.direction} at ${currentValue} (${topConcern.band}). A valid three-reading trend is unavailable.`;
-  }
-
-  const startValue = formatValue(trend.start_value, topConcern.unit);
-  const latestValue = formatValue(trend.latest_value, topConcern.unit);
-  const trendVerb =
-    trend.state === "stable" ? "remained stable" : trend.state;
-
-  return `Top concern: ${topConcern.label} is ${topConcern.direction} at ${currentValue} (${topConcern.band}) and ${trendVerb} from ${startValue} to ${latestValue} across the last three readings.`;
 }
 
 export const explainRisk = {
@@ -79,6 +52,7 @@ export const explainRisk = {
       patient.topConcern,
       patient.vitalsHistory,
     );
+    const activeAlert = getActiveAlert(patient);
 
     return toolResult({
       patient: {
@@ -92,7 +66,10 @@ export const explainRisk = {
         top_concern: serializeTopConcern(patient.topConcern),
       },
       trend,
-      rationale: riskRationale(patient, trend),
+      rationale: describePatientRisk(patient, trend),
+      ...(activeAlert
+        ? { active_alert: { alert_id: activeAlert.alertId } }
+        : {}),
     });
   },
 };
