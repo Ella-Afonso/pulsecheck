@@ -323,6 +323,7 @@ export const useWardStore = create((set, get) => ({
   patients: initialPatients,
   thresholds: alertThresholds,
   triageOrderOverride: null,
+  lastCommittedId: null,
   handoffDraft: {
     content: "",
     authoredBy: null,
@@ -450,6 +451,9 @@ export const useWardStore = create((set, get) => ({
 
     set((state) => ({
       patients: result.patients,
+      ...(proposal.patient_id
+        ? { lastCommittedId: proposal.patient_id }
+        : {}),
       ...(Object.hasOwn(result, "triageOrderOverride")
         ? { triageOrderOverride: result.triageOrderOverride }
         : {}),
@@ -469,6 +473,13 @@ export const useWardStore = create((set, get) => ({
     }));
 
     return { ok: true, committed: result.committed };
+  },
+  clearLastCommittedId: (patientId) => {
+    set((state) =>
+      state.lastCommittedId === patientId
+        ? { lastCommittedId: null }
+        : state,
+    );
   },
   rejectProposal: (proposalId) => {
     const proposal = get().pendingProposals.find(

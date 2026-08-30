@@ -1,4 +1,14 @@
+import { useEffect, useState } from "react";
 import { ProvenanceChip } from "./ProvenanceChip";
+
+const APPROVAL_EXIT_DURATION_MS = 220;
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+  );
+}
 
 function formatPriority(priority) {
   return priority.charAt(0).toUpperCase() + priority.slice(1);
@@ -59,9 +69,38 @@ function ProposalDetails({ proposal }) {
 
 export function ProposalCard({ proposal, approvalError, patient, onApprove, onReject }) {
   const patientLabel = targetLabel(proposal, patient);
+  const [isCommitting, setIsCommitting] = useState(false);
+
+  useEffect(() => {
+    if (!isCommitting) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      const result = onApprove(proposal.id);
+
+      if (!result?.ok) {
+        setIsCommitting(false);
+      }
+    }, APPROVAL_EXIT_DURATION_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [isCommitting, onApprove, proposal.id]);
+
+  function handleApprove() {
+    if (isCommitting) return;
+
+    if (prefersReducedMotion()) {
+      onApprove(proposal.id);
+      return;
+    }
+
+    setIsCommitting(true);
+  }
 
   return (
-    <article className="proposal-card">
+    <article
+      className={`proposal-card${isCommitting ? " proposal-card--committing" : ""}`}
+      aria-busy={isCommitting || undefined}
+    >
       <header className="proposal-card__header">
         <p className="proposal-card__eyebrow">Agent proposal</p>
         {proposal.priority ? (
@@ -83,7 +122,8 @@ export function ProposalCard({ proposal, approvalError, patient, onApprove, onRe
         <button
           className="proposal-card__approve"
           type="button"
-          onClick={() => onApprove(proposal.id)}
+          onClick={handleApprove}
+          disabled={isCommitting}
         >
           Approve
         </button>
@@ -91,6 +131,7 @@ export function ProposalCard({ proposal, approvalError, patient, onApprove, onRe
           className="proposal-card__reject"
           type="button"
           onClick={() => onReject(proposal.id)}
+          disabled={isCommitting}
         >
           Reject
         </button>

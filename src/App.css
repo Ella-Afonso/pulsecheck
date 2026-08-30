@@ -4,6 +4,149 @@
   box-sizing: border-box;
 }
 
+.wardround-app {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+}
+
+.app-shell__header,
+.wardround-hero,
+.trust-strip {
+  width: min(100%, calc(var(--sp-16) * 20));
+  margin: 0 auto;
+}
+
+.app-shell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  padding-bottom: var(--sp-4);
+  border-bottom: 1px solid var(--border-hair);
+}
+
+.app-shell__brand,
+.app-shell__live-link,
+.wardround-hero__cta {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+  text-decoration: none;
+}
+
+.app-shell__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  color: var(--display);
+  font-family: var(--font-display);
+  font-size: var(--fs-h2);
+  letter-spacing: var(--tracking-hero);
+}
+
+.app-shell__brand-mark {
+  width: var(--sp-3);
+  height: var(--sp-3);
+  border: 1px solid var(--brand-rose);
+  border-radius: var(--r-pill);
+  box-shadow: var(--accent-glow);
+}
+
+.app-shell__live-link {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-pill);
+  color: var(--brand-rose);
+}
+
+.app-shell__brand:focus-visible,
+.app-shell__live-link:focus-visible,
+.wardround-hero__cta:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.wardround-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(calc(var(--sp-16) * 3), calc(var(--sp-16) * 5));
+  align-items: end;
+  gap: var(--sp-8);
+  padding: var(--sp-8) 0 var(--sp-6);
+}
+
+.wardround-hero__copy {
+  min-width: 0;
+}
+
+.wardround-hero__eyebrow,
+.wardround-hero__assurance p {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+.wardround-hero h1 {
+  max-width: calc(var(--sp-16) * 11);
+  margin: var(--sp-3) 0 0;
+  color: var(--display);
+  font-family: var(--font-display);
+  font-size: clamp(2.45rem, 5vw, 4.6rem);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-hero);
+  line-height: var(--leading-hero);
+  text-transform: uppercase;
+}
+
+.wardround-hero__summary {
+  max-width: calc(var(--sp-16) * 8);
+  margin: var(--sp-4) 0 0;
+  color: var(--text-body);
+  font-size: var(--fs-lg);
+}
+
+.wardround-hero__cta {
+  display: inline-flex;
+  margin-top: var(--sp-4);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--brand-rose);
+  border-radius: var(--r-pill);
+  background: var(--brand-rose);
+  color: var(--bg-base);
+  box-shadow: var(--accent-glow);
+}
+
+.wardround-hero__assurance {
+  display: grid;
+  gap: var(--sp-2);
+  min-width: 0;
+  padding: var(--sp-4);
+  border: 1px solid var(--border-hair);
+  border-left-color: var(--brand-rose);
+  border-radius: var(--r-md);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--surface-1) 92%, transparent),
+    color-mix(in srgb, var(--surface-inset) 86%, transparent)
+  );
+  box-shadow: var(--shadow-1);
+}
+
+.wardround-hero__assurance p {
+  color: var(--brand-rose);
+}
+
+.wardround-hero__assurance span {
+  color: var(--text-body);
+  font-size: var(--fs-sm);
+}
+
+.wardround-product {
+  scroll-margin-top: var(--sp-4);
+}
+
 .wardround-workspace {
   width: min(100%, calc(var(--sp-16) * 20));
   margin: 0 auto;
@@ -25,6 +168,41 @@
   grid-template-columns: minmax(0, 1fr);
   min-width: 0;
   gap: var(--sp-6);
+}
+
+.trust-strip {
+  margin-top: var(--sp-8);
+  padding-top: var(--sp-4);
+  border-top: 1px solid var(--border-hair);
+}
+
+.trust-strip__list {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--sp-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.trust-strip__item {
+  display: grid;
+  gap: var(--sp-1);
+  min-width: 0;
+  padding-bottom: var(--sp-4);
+  border-left: 1px solid var(--border-hair);
+  padding-left: var(--sp-3);
+}
+
+.trust-strip__item strong {
+  color: var(--text-hi);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+}
+
+.trust-strip__item span {
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
 }
 
 .handoff-pane {
@@ -181,7 +359,7 @@
   text-transform: uppercase;
 }
 
-.patient-board h1,
+.patient-board h2,
 .patient-card h2 {
   margin: 0;
   color: var(--display);
@@ -189,7 +367,7 @@
   font-weight: var(--fw-bold);
 }
 
-.patient-board h1 {
+.patient-board h2 {
   margin-top: var(--sp-2);
   font-size: var(--fs-display);
   line-height: var(--leading-hero);
@@ -246,6 +424,8 @@
 
   display: grid;
   gap: var(--sp-4);
+  position: relative;
+  isolation: isolate;
   padding: var(--sp-4);
   border: 1px solid var(--border-hair);
   border-radius: var(--r-md);
@@ -254,6 +434,36 @@
     background var(--dur) var(--ease),
     border-color var(--dur) var(--ease),
     transform var(--dur) var(--ease);
+}
+
+.patient-card--committed::after {
+  position: absolute;
+  inset: calc(var(--sp-1) / -2);
+  z-index: 1;
+  border: 1px solid var(--accent);
+  border-radius: calc(var(--r-md) + var(--sp-1));
+  box-shadow: var(--accent-glow);
+  content: "";
+  opacity: 0;
+  pointer-events: none;
+  animation: patient-card-commit-ring 1.2s var(--ease) both;
+}
+
+@keyframes patient-card-commit-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1.018);
+  }
 }
 
 .patient-card:hover {
@@ -507,6 +717,15 @@
   border-left-color: var(--agent-line);
   border-radius: var(--r-md);
   background: var(--surface-2);
+  transition:
+    opacity var(--dur) var(--ease),
+    transform var(--dur) var(--ease);
+}
+
+.proposal-card--committing {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(calc(var(--sp-3) * -1));
 }
 
 .proposal-card__header {
@@ -573,6 +792,12 @@
   flex: 1;
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-sm);
+}
+
+.proposal-card__approve:disabled,
+.proposal-card__reject:disabled {
+  cursor: wait;
+  opacity: 0.58;
 }
 
 .proposal-card__approve {
@@ -696,16 +921,28 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .patient-card {
+  .patient-card,
+  .proposal-card {
     transition: none;
   }
 
   .patient-card:hover {
     transform: none;
   }
+
+  .patient-card--committed::after {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (max-width: 69.99rem) {
+  .wardround-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-4);
+  }
+
   .wardround-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -725,6 +962,25 @@
   .wardround-primary,
   .wardround-sidecar {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .app-shell__header,
+  .wardround-hero,
+  .trust-strip {
+    width: 100%;
+  }
+
+  .wardround-hero {
+    padding-top: var(--sp-6);
+  }
+
+  .wardround-hero h1 {
+    font-size: clamp(2.35rem, 14vw, 3.5rem);
+  }
+
+  .trust-strip__list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sp-3);
   }
 
   .patient-board {

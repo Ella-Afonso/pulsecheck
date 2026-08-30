@@ -1,9 +1,12 @@
 import { useEffect } from "react";
 import "./App.css";
 import { ApprovalsRail } from "./components/ApprovalsRail";
+import { AppShell } from "./components/AppShell";
 import { AuditLog } from "./components/AuditLog";
 import { HandoffPane } from "./components/HandoffPane";
+import { Hero } from "./components/Hero";
 import { PatientBoard } from "./components/PatientBoard";
+import { TrustStrip } from "./components/TrustStrip";
 import { useVitalsFeed } from "./hooks/useVitalsFeed";
 import { registerWardTools } from "./tools/registerWardTools";
 
@@ -25,17 +28,21 @@ export default function App() {
   }, []);
 
   return (
-    <main className="wardround-app">
-      <div className="wardround-workspace">
-        <div className="wardround-primary">
-          <PatientBoard />
-          <HandoffPane />
+    <AppShell>
+      <Hero />
+      <section className="wardround-product" id="live-ward" aria-label="Live Wardround workspace">
+        <div className="wardround-workspace">
+          <div className="wardround-primary">
+            <PatientBoard />
+            <HandoffPane />
+          </div>
+          <aside className="wardround-sidecar" aria-label="Approval activity">
+            <ApprovalsRail />
+            <AuditLog />
+          </aside>
         </div>
-        <aside className="wardround-sidecar" aria-label="Approval activity">
-          <ApprovalsRail />
-          <AuditLog />
-        </aside>
-      </div>
-    </main>
+      </section>
+      <TrustStrip />
+    </AppShell>
   );
 }

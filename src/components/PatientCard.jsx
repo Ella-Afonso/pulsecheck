@@ -28,7 +28,7 @@ function flagAriaLabel(flag) {
   return `${flagLabel(flag)} from an approved agent proposal`;
 }
 
-export function PatientCard({ patient }) {
+export function PatientCard({ patient, isRecentlyCommitted = false }) {
   const { vitals, topConcern } = patient;
   const severity = patient.severity ?? 1;
   const flag = patient.workflow?.flag;
@@ -40,7 +40,11 @@ export function PatientCard({ patient }) {
     : null;
 
   return (
-    <article className={`patient-card patient-card--severity-${severity}`}>
+    <article
+      className={`patient-card patient-card--severity-${severity}${
+        isRecentlyCommitted ? " patient-card--committed" : ""
+      }`}
+    >
       <div className="patient-card__header">
         <div>
           <p className="patient-card__eyebrow">
