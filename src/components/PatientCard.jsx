@@ -18,9 +18,21 @@ function concernText(topConcern) {
   return `${topConcern.label} ${topConcern.value}${topConcern.unit} is ${topConcern.direction}`;
 }
 
+function flagLabel(flag) {
+  const priority = flag.priority.charAt(0).toUpperCase() + flag.priority.slice(1);
+  return `${flag.origin === "demo" ? "Demo flag" : "Flagged"} · ${priority}`;
+}
+
+function flagAriaLabel(flag) {
+  return flag.origin === "demo"
+    ? `${flagLabel(flag)} from the demo workflow`
+    : `${flagLabel(flag)} from an approved agent proposal`;
+}
+
 export function PatientCard({ patient }) {
   const { vitals, topConcern } = patient;
   const severity = patient.severity ?? 1;
+  const flag = patient.workflow?.flag;
 
   return (
     <article className={`patient-card patient-card--severity-${severity}`}>
@@ -93,6 +105,17 @@ export function PatientCard({ patient }) {
           Risk {patient.riskScore}
         </p>
       </div>
+
+      {flag ? (
+        <div
+          className="patient-card__flag"
+          role="status"
+          aria-label={flagAriaLabel(flag)}
+        >
+          <span>Agent workflow</span>
+          <strong>{flagLabel(flag)}</strong>
+        </div>
+      ) : null}
     </article>
   );
 }
