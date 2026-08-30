@@ -1,5 +1,6 @@
 import { acknowledgeAlert } from "./acknowledgeAlert";
 import { annotatePatient } from "./annotatePatient";
+import { draftHandoffSummary } from "./draftHandoffSummary";
 import { explainRisk } from "./explainRisk";
 import { flagPatient } from "./flagPatient";
 import { listPatientsByRisk } from "./listPatientsByRisk";
@@ -18,6 +19,7 @@ export async function registerWardTools(signal) {
     await document.modelContext.registerTool(annotatePatient, { signal });
     await document.modelContext.registerTool(acknowledgeAlert, { signal });
     await document.modelContext.registerTool(proposeTriageOrder, { signal });
+    await document.modelContext.registerTool(draftHandoffSummary, { signal });
     console.info("[webmcp] ward tools registered");
     return true;
   } catch (error) {

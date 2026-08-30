@@ -4,13 +4,16 @@ import { PatientCard } from "./PatientCard";
 export function PatientBoard() {
   const patients = useWardStore((state) => state.patients);
   const triageOrderOverride = useWardStore((state) => state.triageOrderOverride);
+  const boardHeading = triageOrderOverride
+    ? "Nurse-approved triage order"
+    : "Patients by risk";
 
   return (
     <section className="patient-board" aria-labelledby="patient-board-title">
       <header className="patient-board__header">
         <div>
           <p className="patient-board__eyebrow">ICU · live ward queue</p>
-          <h1 id="patient-board-title">Patients by risk</h1>
+          <h1 id="patient-board-title">{boardHeading}</h1>
         </div>
         <div className="patient-board__signals">
           {triageOrderOverride ? (

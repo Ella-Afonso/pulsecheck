@@ -13,6 +13,129 @@
   gap: var(--sp-8);
 }
 
+.wardround-primary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+  gap: var(--sp-6);
+}
+
+.handoff-pane {
+  display: grid;
+  gap: var(--sp-3);
+  min-width: 0;
+  padding: var(--sp-4);
+  border: 1px solid var(--agent-line);
+  border-radius: var(--r-md);
+  background: var(--surface-1);
+}
+
+.handoff-pane__header,
+.handoff-pane__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+.handoff-pane__eyebrow,
+.handoff-pane__label {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+.handoff-pane h2 {
+  margin: var(--sp-1) 0 0;
+  color: var(--text-hi);
+  font-family: var(--font-display);
+  font-size: var(--fs-h1);
+  line-height: var(--leading-hero);
+}
+
+.handoff-pane__updated,
+.handoff-pane__last-editor,
+.handoff-pane__incoming {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--fs-sm);
+}
+
+.agent-authored-marker {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: fit-content;
+  margin: 0;
+  color: var(--agent);
+  font-size: var(--fs-micro);
+  font-weight: var(--fw-semi);
+  letter-spacing: var(--tracking-micro);
+  text-transform: uppercase;
+}
+
+.agent-authored-marker span {
+  width: var(--sp-2);
+  height: var(--sp-2);
+  border-radius: var(--r-pill);
+  background: var(--agent);
+}
+
+.handoff-pane__textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: calc(var(--sp-16) * 3);
+  padding: var(--sp-3);
+  border: 1px solid var(--border-hair);
+  border-radius: var(--r-sm);
+  background: var(--surface-inset);
+  color: var(--text-body);
+  font: inherit;
+  font-size: var(--fs-sm);
+  line-height: var(--leading-body);
+  resize: vertical;
+}
+
+.handoff-pane__textarea:focus {
+  border-color: var(--agent-line);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.handoff-pane__incoming {
+  padding: var(--sp-2);
+  border: 1px solid var(--agent-line);
+  border-radius: var(--r-sm);
+  background: var(--agent-soft);
+  color: var(--agent);
+}
+
+.handoff-pane__save {
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid var(--brand-rose);
+  border-radius: var(--r-sm);
+  background: var(--brand-rose);
+  color: var(--bg-base);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semi);
+  cursor: pointer;
+}
+
+.handoff-pane__save:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.handoff-pane__save:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .patient-board {
   width: 100%;
   margin: 0;
@@ -611,6 +734,7 @@
   }
 
   .wardround-workspace,
+  .wardround-primary,
   .wardround-sidecar {
     grid-template-columns: minmax(0, 1fr);
   }

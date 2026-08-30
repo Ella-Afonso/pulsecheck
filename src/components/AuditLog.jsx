@@ -15,6 +15,16 @@ const TOOL_LABELS = {
 };
 
 function actionLabel(entry) {
+  if (entry.tool === "draft_handoff_summary") {
+    if (entry.actor === "agent" && entry.action === "drafted") {
+      return "Agent drafted the shift handoff";
+    }
+
+    if (entry.actor === "nurse" && entry.action === "edited") {
+      return "Nurse edited the shift handoff";
+    }
+  }
+
   const actor = entry.actor === "agent" ? "Agent" : "Nurse";
   const action = {
     proposed: "proposed",

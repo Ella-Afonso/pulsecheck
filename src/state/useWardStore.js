@@ -25,6 +25,7 @@ const initialPatients = scoreAndRankPatients(
 const FLAG_PRIORITIES = new Set(["watch", "urgent", "critical"]);
 const MAX_REASON_LENGTH = 280;
 const MAX_NOTE_LENGTH = 280;
+const MAX_HANDOFF_LENGTH = 6_000;
 const ALERT_ID_PATTERN = /^alert:[A-Za-z0-9-]{1,64}:(hr|spo2|resp|temp|systolicBp|diastolicBp):(warning|high|critical)$/;
 
 function createId(prefix) {
@@ -42,6 +43,13 @@ function normalizeText(value, maximumLength) {
   return normalized.length > 0 && normalized.length <= maximumLength
     ? normalized
     : null;
+}
+
+function normalizeHandoffContent(value) {
+  if (typeof value !== "string") return null;
+
+  const normalized = value.trim();
+  return normalized.length <= MAX_HANDOFF_LENGTH ? normalized : null;
 }
 
 function findPatient(patients, patientId) {
@@ -244,6 +252,19 @@ function createAuditEntry({ actor, action, proposal, detail }) {
   };
 }
 
+function createHandoffAuditEntry({ actor, action, detail }) {
+  return {
+    id: createId("audit"),
+    actor,
+    action,
+    proposal_id: null,
+    tool: "draft_handoff_summary",
+    detail,
+    at: new Date().toISOString(),
+    ...(actor === "agent" ? { origin: "agent" } : {}),
+  };
+}
+
 function auditDetail(proposal, decision) {
   const demoPrefix = proposal.origin === "demo" ? "Demo proposal — " : "";
 
@@ -317,6 +338,12 @@ export const useWardStore = create((set, get) => ({
   patients: initialPatients,
   thresholds: alertThresholds,
   triageOrderOverride: null,
+  handoffDraft: {
+    content: "",
+    authoredBy: null,
+    lastEditedBy: null,
+    updatedAt: null,
+  },
   pendingProposals: [],
   proposalErrors: {},
   auditLog: [],
@@ -358,6 +385,72 @@ export const useWardStore = create((set, get) => ({
       reason: "Review for deterioration.",
       origin: "demo",
     });
+  },
+  draftHandoffSummary: (content) => {
+    const normalizedContent = normalizeHandoffContent(content);
+
+    if (normalizedContent === null) {
+      return { ok: false, code: "invalid_handoff" };
+    }
+
+    const updatedAt = new Date().toISOString();
+
+    set((state) => ({
+      handoffDraft: {
+        content: normalizedContent,
+        authoredBy: "agent",
+        lastEditedBy: "agent",
+        updatedAt,
+      },
+      auditLog: [
+        ...state.auditLog,
+        createHandoffAuditEntry({
+          actor: "agent",
+          action: "drafted",
+          detail: "Drafted the shared shift handoff from the current ward state.",
+        }),
+      ],
+    }));
+
+    return { ok: true, updatedAt };
+  },
+  saveNurseHandoffDraft: (content) => {
+    const normalizedContent = normalizeHandoffContent(content);
+
+    if (normalizedContent === null) {
+      return { ok: false, code: "invalid_handoff" };
+    }
+
+    const currentDraft = get().handoffDraft;
+
+    if (normalizedContent === currentDraft.content) {
+      return { ok: true, unchanged: true, updatedAt: currentDraft.updatedAt };
+    }
+
+    const updatedAt = new Date().toISOString();
+    const authoredBy =
+      currentDraft.authoredBy === "agent" || currentDraft.authoredBy === "co"
+        ? "co"
+        : "nurse";
+
+    set((state) => ({
+      handoffDraft: {
+        content: normalizedContent,
+        authoredBy,
+        lastEditedBy: "nurse",
+        updatedAt,
+      },
+      auditLog: [
+        ...state.auditLog,
+        createHandoffAuditEntry({
+          actor: "nurse",
+          action: "edited",
+          detail: "Saved an edit to the shared shift handoff.",
+        }),
+      ],
+    }));
+
+    return { ok: true, updatedAt };
   },
   approveProposal: (proposalId) => {
     const proposal = get().pendingProposals.find(

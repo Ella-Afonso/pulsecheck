@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import "./App.css";
 import { ApprovalsRail } from "./components/ApprovalsRail";
 import { AuditLog } from "./components/AuditLog";
+import { HandoffPane } from "./components/HandoffPane";
 import { PatientBoard } from "./components/PatientBoard";
 import { useVitalsFeed } from "./hooks/useVitalsFeed";
 import { registerPing } from "./tools/registerPing";
@@ -41,7 +42,10 @@ export default function App() {
   return (
     <main className="wardround-app">
       <div className="wardround-workspace">
-        <PatientBoard />
+        <div className="wardround-primary">
+          <PatientBoard />
+          <HandoffPane />
+        </div>
         <aside className="wardround-sidecar" aria-label="Approval activity">
           <ApprovalsRail />
           <AuditLog />
