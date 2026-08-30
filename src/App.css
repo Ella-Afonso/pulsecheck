@@ -2,7 +2,7 @@
   width: min(100%, calc(var(--sp-16) * 20));
   margin: 0 auto;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(calc(var(--sp-16) * 4), calc(var(--sp-16) * 5));
+  grid-template-columns: minmax(0, 1fr) minmax(calc(var(--sp-16) * 5), calc(var(--sp-16) * 6));
   align-items: start;
   gap: var(--sp-6);
 }
@@ -10,6 +10,7 @@
 .wardround-sidecar {
   display: grid;
   align-content: start;
+  min-width: 0;
   gap: var(--sp-8);
 }
 
@@ -393,7 +394,9 @@
 }
 
 .approvals-rail,
-.audit-log {
+.audit-log,
+.proposal-card,
+.audit-row > div {
   min-width: 0;
 }
 
@@ -636,6 +639,7 @@
 .audit-row__detail {
   margin-top: var(--sp-1);
   color: var(--text-muted);
+  overflow-wrap: anywhere;
 }
 
 .audit-row__time {
@@ -694,13 +698,13 @@
   }
 }
 
-@media (max-width: 72rem) {
+@media (max-width: 69.99rem) {
   .wardround-workspace {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .wardround-sidecar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     align-items: start;
   }
 }
