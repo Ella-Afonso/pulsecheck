@@ -403,13 +403,42 @@
   display: grid;
   gap: var(--sp-2);
   margin: 0;
-  padding: 0;
+  padding: var(--sp-1);
   list-style: none;
+  max-height: clamp(260px, 60dvh, 640px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 .patient-directory__list:focus-visible {
   outline: none;
   box-shadow: var(--focus-ring);
+}
+
+.patient-board__list::-webkit-scrollbar,
+.patient-directory__list::-webkit-scrollbar {
+  width: 10px;
+}
+
+.patient-board__list::-webkit-scrollbar-track,
+.patient-directory__list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.patient-board__list::-webkit-scrollbar-thumb,
+.patient-directory__list::-webkit-scrollbar-thumb {
+  border: 3px solid transparent;
+  border-radius: var(--r-pill);
+  background-color: var(--border-strong);
+  background-clip: padding-box;
+}
+
+.patient-board__list::-webkit-scrollbar-thumb:hover,
+.patient-directory__list::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-faint);
 }
 
 .patient-directory__row {
@@ -894,7 +923,15 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--sp-3);
+  max-height: clamp(260px, 60dvh, 640px);
   padding-top: var(--sp-4);
+  padding-inline: var(--sp-1);
+  padding-bottom: var(--sp-1);
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-gutter: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
 }
 
 .patient-card {
@@ -1482,7 +1519,7 @@
     overflow-y: auto;
     padding-inline: var(--sp-1);
     padding-bottom: var(--sp-1);
-    scrollbar-gutter: stable;
+    scrollbar-gutter: auto;
   }
 
   .dashboard-view--handoff .dashboard-view__center {
