@@ -1,3 +1,5 @@
+import { demoDeterioration, isDemoMode, isDemoTarget } from "./demoMode";
+
 export const MAX_VITALS_HISTORY = 8;
 
 const VITAL_BOUNDS = {
@@ -31,7 +33,10 @@ export function driftVitals(vitals) {
 }
 
 export function driftPatient(patient, timestamp = new Date().toISOString()) {
-  const vitals = driftVitals(patient.vitals);
+  const vitals =
+    isDemoMode() && isDemoTarget(patient)
+      ? demoDeterioration(patient.vitals)
+      : driftVitals(patient.vitals);
   const nextReading = { timestamp, vitals };
 
   return {
