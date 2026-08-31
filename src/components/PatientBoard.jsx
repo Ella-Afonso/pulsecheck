@@ -43,7 +43,12 @@ export function PatientBoard() {
         </div>
       </header>
 
-      <div className="patient-board__list">
+      <div
+        className="patient-board__list"
+        tabIndex={0}
+        role="group"
+        aria-label="Patient list, scrollable"
+      >
         {patients.map((patient) => (
           <PatientCard
             key={patient.patient_id}

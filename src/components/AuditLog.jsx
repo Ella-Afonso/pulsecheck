@@ -50,7 +50,11 @@ export function AuditLog() {
       {entries.length === 0 ? (
         <p className="audit-log__empty">Agent proposals and nurse decisions appear here.</p>
       ) : (
-        <ol className="audit-log__list">
+        <ol
+          className="audit-log__list"
+          tabIndex={0}
+          aria-label="Audit log, scrollable"
+        >
           {entries.map((entry) => (
             <li className="audit-row" key={entry.id}>
               <span
