@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import { ApprovalsRail } from "./components/ApprovalsRail";
 import { AppShell } from "./components/AppShell";
@@ -28,6 +28,8 @@ export default function App() {
   useVitalsFeed();
 
   const [activeView, setActiveView] = useState("board");
+  const [liveWardRequest, setLiveWardRequest] = useState(0);
+  const dashboardViewRef = useRef(null);
   const pendingCount = useWardStore((state) => state.pendingProposals.length);
 
   useEffect(() => {
@@ -47,10 +49,25 @@ export default function App() {
   const activeLabel = VIEWS.find((view) => view.id === activeView)?.label ?? "";
   const railHasApprovals = activeView === "board" || activeView === "activity";
 
+  function handleShowLiveWard(event) {
+    event.preventDefault();
+    setActiveView("board");
+    setLiveWardRequest((request) => request + 1);
+  }
+
+  useEffect(() => {
+    if (liveWardRequest === 0) return;
+
+    window.history.replaceState(null, "", "#live-ward");
+    const dashboardView = dashboardViewRef.current;
+    dashboardView?.scrollIntoView({ behavior: "smooth", block: "start" });
+    dashboardView?.focus({ preventScroll: true });
+  }, [liveWardRequest]);
+
   return (
     <AppShell>
       <div className="wardround-showcase">
-        <Hero />
+        <Hero onShowLiveWard={handleShowLiveWard} />
         <section
           className="wardround-product"
           id="live-ward"
@@ -82,6 +99,7 @@ export default function App() {
               <div
                 className={`dashboard-view dashboard-view--${activeView}`}
                 id="dashboard-view"
+                ref={dashboardViewRef}
                 role="tabpanel"
                 aria-labelledby={`tab-${activeView}`}
                 tabIndex={0}

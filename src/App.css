@@ -834,6 +834,7 @@
 }
 
 .patient-board {
+  container-type: inline-size;
   width: 100%;
   box-sizing: border-box;
   margin: 0;
@@ -934,6 +935,12 @@
   scrollbar-color: var(--border-strong) transparent;
 }
 
+@container board (min-width: 33rem) {
+  .patient-board__list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
 .patient-card {
   --patient-severity: var(--sev-1-normal);
 
@@ -1017,6 +1024,19 @@
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: var(--sp-2);
+}
+
+/* Keep vital readings legible when the desktop board itself gets narrow. */
+@container (max-width: 18rem) {
+  .patient-card__vitals {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@container (max-width: 12.5rem) {
+  .patient-card__vitals {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .patient-card__vital {
@@ -1510,6 +1530,10 @@
     height: 100%;
   }
 
+  .dashboard-view__center .patient-board {
+    container: board / inline-size;
+  }
+
   .dashboard-view__center .patient-board__list,
   .dashboard-view__center .approvals-rail__list,
   .dashboard-view__center .audit-log__list,
@@ -1529,6 +1553,14 @@
   .dashboard-view__rail {
     min-height: 0;
     overflow-y: auto;
+  }
+}
+
+@media (min-width: 100rem) {
+  .app-shell__header,
+  .wardround-showcase,
+  .trust-strip {
+    width: min(100%, calc(var(--sp-16) * 26));
   }
 }
 

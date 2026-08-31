@@ -1,4 +1,4 @@
-export function Hero() {
+export function Hero({ onShowLiveWard }) {
   return (
     <section className="wardround-hero" aria-labelledby="wardround-hero-title">
       <div className="wardround-hero__copy">
@@ -8,7 +8,11 @@ export function Hero() {
           Wardround keeps live risk, agent reasoning, and nurse approval together in
           one shared ICU workflow.
         </p>
-        <a className="wardround-hero__cta" href="#live-ward">
+        <a
+          className="wardround-hero__cta"
+          href="#live-ward"
+          onClick={onShowLiveWard}
+        >
           See the live ward
         </a>
       </div>
